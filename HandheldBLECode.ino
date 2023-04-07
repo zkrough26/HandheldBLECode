@@ -69,7 +69,7 @@
 
 # include "defines.h"
 
-#define BLE_SHOW_DATA 1
+//#define BLE_SHOW_DATA 1
 
 ///////////////////////////////////////////////////////
 // Program defines
@@ -559,16 +559,38 @@ void DisplayMessage() {
   int i,j;
   SERIAL_PORT.println(F("\nThe following complete message has been received:"));
 
-  for (i = 0, j = 0; i < TotalMessageLength ; i++, j++){
-
-    // make it fit a screen nicely
-    if (j == 80) {
-      j=0;
-      SERIAL_PORT.println();
-    }
-
-    SERIAL_PORT.print(MessageBuf[i], HEX);
-  }
+  Serial.println(MessageBuf[0], BIN);
+  Serial.println(MessageBuf[1], BIN);
+  Serial.println(MessageBuf[2], BIN);
+  Serial.println(MessageBuf[3], BIN);
+  Serial.println(MessageBuf[4], BIN);
+  Serial.println();
+  Serial.println(MessageBuf[5], BIN);
+  Serial.println(MessageBuf[6], BIN);
+  Serial.println(MessageBuf[7], BIN);
+  Serial.println(MessageBuf[8], BIN);
+  Serial.println(MessageBuf[9], BIN);
+  Serial.println();
+  Serial.println(MessageBuf[10], BIN);
+  Serial.println(MessageBuf[11], BIN);
+  Serial.println(MessageBuf[12], BIN);
+  Serial.println(MessageBuf[13], BIN);
+  Serial.println(MessageBuf[14], BIN);
+  Serial.println();
+  Serial.println(MessageBuf[15], BIN);
+  Serial.println(MessageBuf[16], BIN);
+  Serial.println(MessageBuf[17], BIN);
+  Serial.println(MessageBuf[18], BIN);
+  Serial.println(MessageBuf[19], BIN);
+  //for (i = 0, j = 0; i < TotalMessageLength ; i++, j++)
+  //{
+  //  if (j == 80) 
+  //  {
+  //    j=0;
+  //    SERIAL_PORT.println();
+  //  }
+  //  SERIAL_PORT.print(MessageBuf[i], HEX);
+  //}
 
   SERIAL_PORT.println();
 }
