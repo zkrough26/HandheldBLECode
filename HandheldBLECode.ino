@@ -94,7 +94,7 @@ void loop() {
   if(now - lastMessage >= 5000)
   {
     SendCommand(REQ_NEW_MESSAGE);
-    lastBlink = now;
+    lastMessage = now;
   }
 }
 

@@ -106,29 +106,20 @@ bool CheckConnect()
  */
 void Start_BLE()
 {
-#ifdef BLE_Debug
-  BLE.debug(SERIAL_PORT);         // enable display HCI commands
-#endif
-
-  SERIAL_PORT.println(F("\rStarting Bluetooth"));
-
   AMD_stat = AMD_IDLE;
 
   if (!BLE.begin()){
-    SERIAL_PORT.println(F("\rStarting BLE failed! freeze."));
     while(1);
   }
 
   // find Peripheral by service name
   if (!PerformScan()){
-    SERIAL_PORT.println(F("\rCould not find Peripheral. freeze."));
-    while(1);
+    Start_BLE();
   }
 
   // connect and find handles
   if (!get_handles()){
-    SERIAL_PORT.println(F("\rCould not connect or find all characteristics. freeze."));
-    while(1);
+    Start_BLE();
   }
 
   // set peripheral disconnect handler
@@ -151,8 +142,6 @@ bool PerformScan()
 {
   if (AMD_stat != AMD_IDLE) return false;
 
-  SERIAL_PORT.println(F("Scan for peripheral service\r"));
-
   // prevent deadlock
   unsigned long st = millis();
 
@@ -165,40 +154,6 @@ bool PerformScan()
     peripheral = BLE.available();
 
     if (peripheral) {
-
-      // discovered a peripheral
-      SERIAL_PORT.println(F("Discovered an peripheral server\r"));
-      SERIAL_PORT.println(F("-------------------------------\r"));
-
-      // print address
-      SERIAL_PORT.print(F("Address: "));
-      SERIAL_PORT.print(peripheral.address());
-      SERIAL_PORT.print("\r\n");
-
-#ifdef BLE_Debug
-      // print the local name, if present
-      if (peripheral.hasLocalName()) {
-        SERIAL_PORT.print(F("Local Name: "));
-        SERIAL_PORT.print(peripheral.localName());
-        SERIAL_PORT.print("\r\n");
-      }
-
-      // print the advertised service UUIDs, if present
-      if (peripheral.hasAdvertisedServiceUuid()) {
-        SERIAL_PORT.print(F("Service UUIDs: "));
-        for (int i = 0; i < peripheral.advertisedServiceUuidCount(); i++) {
-          SERIAL_PORT.print(peripheral.advertisedServiceUuid(i));
-          SERIAL_PORT.print(" ");
-        }
-        SERIAL_PORT.print("\r\n");
-      }
-
-      // print the RSSI
-      SERIAL_PORT.print(F("RSSI: "));
-      SERIAL_PORT.println(peripheral.rssi());
-      SERIAL_PORT.print("\r\n");
-#endif
-
       AMD_stat = AMD_SCANNED;
       BLE.stopScan();
       return true;
@@ -219,33 +174,17 @@ bool get_handles()
 {
   if (AMD_stat != AMD_SCANNED) return false;
 
-  // connect to the peripheral
-  SERIAL_PORT.print(F("Connecting ..."));
-
-  if (peripheral.connect()) {
-    SERIAL_PORT.println(F("Connected\r"));
-  }
-  else {
-    SERIAL_PORT.println(F("Failed to connect!\r"));
-    return false;
-  }
-
   AMD_stat = AMD_CONNECTED;
 
   // discover peripheral attributes
-  SERIAL_PORT.print(F("Discovering attributes ..."));
   if (peripheral.discoverAttributes()) {
-    SERIAL_PORT.println(F("Attributes discovered\r"));
-    
     // needed for blocksize
     CurrentMTUSize = (uint8_t) peripheral.readMTU();
   }
   else {
-    SERIAL_PORT.println(F("Attribute discovery failed!\r"));
     perform_disconnect();
     return false;
   }
-  SERIAL_PORT.print(F("Discovering characteristics ..."));
   
   // retrieve the characteristics handles
   RX_Char = peripheral.characteristic(CHARACTERISTIC_W_UUID); // read data from peripheral
@@ -253,29 +192,23 @@ bool get_handles()
   N_Char = peripheral.characteristic(CHARACTERISTIC_N_UUID);  // Receive commands from peripheral
 
   if (!RX_Char || !TX_Char || !N_Char ) {
-    SERIAL_PORT.println(F("Peripheral does not have all characteristics!\r"));
     perform_disconnect();
     return false;
   }
   else if (!TX_Char.canWrite() ) {
-    SERIAL_PORT.println(F("\rPeripheral does not have a writable characteristic!\r"));
     perform_disconnect();
     return false;
   }
 
   if (!RX_Char.canRead() ) {
-    SERIAL_PORT.println(F("\rPeripheral does not have a readable characteristic!\r"));
     peripheral.disconnect();
     return false;
   }
 
   if (!N_Char.subscribe()) {
-    SERIAL_PORT.println(F("Set notify subscription failed!\r"));
     peripheral.disconnect();
     return false;
   }
-
-  SERIAL_PORT.println(F("Discovered\r"));
 
   // assign event handlers for notify
   N_Char.setEventHandler(BLEUpdated, N_Char_Received);
@@ -288,7 +221,5 @@ bool get_handles()
  */
 void blePeripheralDisconnectHandler(BLEDevice central) {
   // central disconnected event handler
-  Serial.print("Peripheral forced disconnection, central: ");
-  Serial.println(central.address());
   WaitToReconnect();    // in sketch
 }
