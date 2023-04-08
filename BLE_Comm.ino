@@ -174,6 +174,8 @@ bool get_handles()
 {
   if (AMD_stat != AMD_SCANNED) return false;
 
+  peripheral.connect();
+
   AMD_stat = AMD_CONNECTED;
 
   // discover peripheral attributes

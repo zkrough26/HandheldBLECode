@@ -304,7 +304,7 @@ void HandlePeripheralNotify(const uint8_t *buf, uint16_t len)
 void DisplayMessage() {
   for(int i = 0; i < TotalMessageLength; i++)
   {
-    Serial.print(MessageBuf[i]);
+    Serial.write(MessageBuf[i]);
   }
 }
 
