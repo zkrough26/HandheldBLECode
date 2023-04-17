@@ -22,6 +22,8 @@
 #define REQ_INVALID        10         // Peripheral / Central : Did not request / out of sequence
 #define MAGIC_INVALID      11         // Central : Invalid first block
 #define ERR_INTERNAL       12         // Central : internal error
+#define BEGIN_TRANSMISSION 15         // Connection is Established, begin transmitting SPE data
+#define END_TRANSMISSION   16         // Connection has been lost, stop SPE transmission to free up interrupts
 
 ///////////////////////////////////////////////////////
 // Program variables
@@ -91,7 +93,7 @@ void loop() {
   }
 
   unsigned long now = millis();
-  if(now - lastMessage >= 5000)
+  if(now - lastMessage >= 800)
   {
     SendCommand(REQ_NEW_MESSAGE);
     lastMessage = now;

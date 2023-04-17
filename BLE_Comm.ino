@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////
 // BLE defines
 ///////////////////////////////////////////////////////
-const char BLE_PERIPHERAL_NAME[] = "Mobo";
+const char BLE_PERIPHERAL_NAME[] = "DAD";
 
 #define SERVICE "9e400001-b5a3-f393-e0a9-e14e24dcca9e"
 
@@ -114,12 +114,18 @@ void Start_BLE()
 
   // find Peripheral by service name
   if (!PerformScan()){
+    Serial.println("Could Not Connect to Peripheral");
     Start_BLE();
   }
 
   // connect and find handles
   if (!get_handles()){
+    Serial.println("Could Not Discover Attributes");
     Start_BLE();
+  }
+  else
+  {
+    SendCommand(BEGIN_TRANSMISSION);
   }
 
   // set peripheral disconnect handler
@@ -142,6 +148,7 @@ bool PerformScan()
 {
   if (AMD_stat != AMD_IDLE) return false;
 
+  Serial.println("Scanning for Peripheral");
   // prevent deadlock
   unsigned long st = millis();
 
@@ -174,7 +181,10 @@ bool get_handles()
 {
   if (AMD_stat != AMD_SCANNED) return false;
 
-  peripheral.connect();
+  if(!peripheral.connect())
+  {
+    return false;
+  }
 
   AMD_stat = AMD_CONNECTED;
 
